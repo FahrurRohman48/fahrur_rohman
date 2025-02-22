@@ -1,0 +1,80 @@
+Imports System.IO
+
+Public Class Form1
+    Dim filePath As String = "" ' Variabel untuk menyimpan lokasi file
+    Dim placeholderText As String = "Masukkan kata kunci" ' Placeholder untuk TextBox
+
+    ' Saat form pertama kali dijalankan
+    Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        txtKataKunci.Text = placeholderText
+        txtKataKunci.ForeColor = Color.Gray
+    End Sub
+
+    ' Placeholder: Hapus teks saat diklik
+    Private Sub txtKataKunci_Enter(sender As Object, e As EventArgs) Handles txtKataKunci.Enter
+        If txtKataKunci.Text = placeholderText Then
+            txtKataKunci.Text = ""
+            txtKataKunci.ForeColor = Color.Black
+        End If
+    End Sub
+
+    ' Placeholder: Munculkan kembali jika kosong
+    Private Sub txtKataKunci_Leave(sender As Object, e As EventArgs) Handles txtKataKunci.Leave
+        If txtKataKunci.Text = "" Then
+            txtKataKunci.Text = placeholderText
+            txtKataKunci.ForeColor = Color.Gray
+        End If
+    End Sub
+
+    ' Procedure untuk membuka file
+    Private Sub btnBukaFile_Click(sender As Object, e As EventArgs) Handles btnBukaFile.Click
+        OpenFileDialog1.Filter = "Text Files (*.txt)|*.txt|All Files (*.*)|*.*"
+        If OpenFileDialog1.ShowDialog() = DialogResult.OK Then
+            filePath = OpenFileDialog1.FileName
+            MessageBox.Show("File berhasil dibuka: " & filePath, "Informasi", MessageBoxButtons.OK, MessageBoxIcon.Information)
+        End If
+    End Sub
+
+    ' Procedure untuk mencari kata dalam file
+    Private Sub btnCari_Click(sender As Object, e As EventArgs) Handles btnCari.Click
+        If filePath = "" Then
+            MessageBox.Show("Silakan buka file terlebih dahulu!", "Peringatan", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            Return
+        End If
+
+        Dim kataKunci As String = txtKataKunci.Text
+        If kataKunci = "" Or kataKunci = placeholderText Then
+            MessageBox.Show("Masukkan kata kunci untuk mencari!", "Peringatan", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            Return
+        End If
+
+        lstHasil.Items.Clear()
+
+        Try
+            ' Membaca file baris per baris dan mencari kata kunci
+            Dim baris As String
+            Dim nomorBaris As Integer = 0
+            Dim ditemukan As Boolean = False
+
+            Using reader As New StreamReader(filePath)
+                While Not reader.EndOfStream
+                    baris = reader.ReadLine()
+                    nomorBaris += 1
+                    ' Jika kata kunci ditemukan dalam baris
+                    If baris.ToLower().Contains(kataKunci.ToLower()) Then
+                        lstHasil.Items.Add("Baris " & nomorBaris & ": " & baris)
+                        ditemukan = True
+                    End If
+                End While
+            End Using
+
+            ' Jika tidak ditemukan, tampilkan pesan
+            If Not ditemukan Then
+                lstHasil.Items.Add("Kata kunci tidak ditemukan dalam file.")
+            End If
+
+        Catch ex As Exception
+            MessageBox.Show("Terjadi kesalahan saat membaca file.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        End Try
+    End Sub
+End Class
